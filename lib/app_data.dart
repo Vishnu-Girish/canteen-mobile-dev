@@ -1,4 +1,5 @@
 class AppData {
+  static String currentUserRole = 'student'; // 'admin' or 'student'
   static List<Map<String, dynamic>> cart = [];
   static double walletBalance = 300;
   static int nextOrderId = 242;
@@ -12,16 +13,16 @@ class AppData {
       'name': 'Main canteen',
       'info': '120m away · open',
       'menu': [
-        {'name': 'Idli sambar', 'price': 30, 'available': true},
-        {'name': 'Veg puffs', 'price': 20, 'available': true},
-        {'name': 'Samosa', 'price': 15, 'available': false},
+        {'name': 'Idli sambar', 'price': 30.0, 'available': true},
+        {'name': 'Veg puffs', 'price': 20.0, 'available': true},
+        {'name': 'Samosa', 'price': 15.0, 'available': false},
       ]
     },
     {
       'name': 'Hostel mess',
       'info': '400m away · open',
       'menu': [
-        {'name': 'Meals', 'price': 50, 'available': true},
+        {'name': 'Meals', 'price': 50.0, 'available': true},
       ]
     }
   ];
@@ -46,6 +47,27 @@ class AppData {
 
   static void removeFromCart(String name) {
     cart.removeWhere((item) => item['name'] == name);
+  }
+
+  static void deleteCanteen(String name) {
+    canteens.removeWhere((c) => c['name'] == name);
+  }
+
+  static void addMenuItem(String canteenName, String itemName, double price) {
+    var canteen = canteens.firstWhere((c) => c['name'] == canteenName);
+    canteen['menu'].add({'name': itemName, 'price': price, 'available': true});
+  }
+
+  static void updateItemPrice(String canteenName, String itemName, double newPrice) {
+    var canteen = canteens.firstWhere((c) => c['name'] == canteenName);
+    var item = (canteen['menu'] as List).firstWhere((i) => i['name'] == itemName);
+    item['price'] = newPrice;
+  }
+
+  static void toggleItemAvailability(String canteenName, String itemName) {
+    var canteen = canteens.firstWhere((c) => c['name'] == canteenName);
+    var item = (canteen['menu'] as List).firstWhere((i) => i['name'] == itemName);
+    item['available'] = !item['available'];
   }
 }
 

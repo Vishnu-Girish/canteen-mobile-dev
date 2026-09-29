@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_data.dart';
 import 'home_screen.dart';
 import 'transitions.dart';
 
@@ -25,14 +26,14 @@ class LoginScreenState extends State<LoginScreen> {
             TextField(
               controller: userCtrl,
               style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(labelText: 'Username (admin)', labelStyle: TextStyle(color: Colors.white54), enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white24))),
+              decoration: InputDecoration(labelText: 'Username (admin / student)', labelStyle: TextStyle(color: Colors.white54), enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white24))),
             ),
             SizedBox(height: 16),
             TextField(
               controller: passCtrl,
               obscureText: true,
               style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(labelText: 'Password (1234)', labelStyle: TextStyle(color: Colors.white54), enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white24))),
+              decoration: InputDecoration(labelText: 'Password (admin / student)', labelStyle: TextStyle(color: Colors.white54), enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white24))),
             ),
             SizedBox(height: 8),
             Text(error, style: TextStyle(color: Colors.redAccent)),
@@ -40,7 +41,11 @@ class LoginScreenState extends State<LoginScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.white, padding: EdgeInsets.all(16)),
               onPressed: () {
-                if (userCtrl.text == 'admin' && passCtrl.text == '1234') {
+                if (userCtrl.text == 'admin' && passCtrl.text == 'admin') {
+                  AppData.currentUserRole = 'admin';
+                  Navigator.pushReplacement(context, fadeRoute(HomeScreen()));
+                } else if (userCtrl.text == 'student' && passCtrl.text == 'student') {
+                  AppData.currentUserRole = 'student';
                   Navigator.pushReplacement(context, fadeRoute(HomeScreen()));
                 } else {
                   setState(() => error = 'Invalid credentials');
