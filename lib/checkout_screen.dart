@@ -3,13 +3,8 @@ import 'app_data.dart';
 import 'orders_screen.dart';
 import 'transitions.dart';
 
-// Screen 3 from the diagram: Checkout - location gated.
-// Since a real GPS check needs device permissions, "closeEnough"
-// simulates it - tap the orange banner to pretend you walked closer.
 class CheckoutScreen extends StatefulWidget {
-  State<CheckoutScreen> createState() {
-    return CheckoutScreenState();
-  }
+  State<CheckoutScreen> createState() => CheckoutScreenState();
 }
 
 class CheckoutScreenState extends State<CheckoutScreen> {
@@ -38,14 +33,18 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        item['name'] + ' x1',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      Expanded(
+                        child: Text('${item['name']} x${item['qty']}', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       ),
-                      Text(
-                        'Rs ' + formatRs(item['price']),
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      Text('Rs ${formatRs(item['price'] * item['qty'])}', style: TextStyle(color: Colors.white)),
+                      IconButton(
+                        icon: Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                        onPressed: () {
+                          setState(() {
+                            AppData.removeFromCart(item['name']);
+                          });
+                        },
+                      )
                     ],
                   ),
                 );
@@ -55,62 +54,41 @@ class CheckoutScreenState extends State<CheckoutScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Total',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Rs ' + formatRs(total),
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                Text('Total', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('Rs ${formatRs(total)}', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               ],
             ),
             SizedBox(height: 20),
             closeEnough
                 ? SizedBox()
                 : GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        closeEnough = true;
-                      });
-                    },
+                    onTap: () => setState(() => closeEnough = true),
                     child: Container(
                       width: double.infinity,
                       padding: EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Color(0xFF3D2A0F),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      decoration: BoxDecoration(color: Color(0xFF3D2A0F), borderRadius: BorderRadius.circular(8)),
                       child: Row(
                         children: [
                           Icon(Icons.location_on, color: Colors.orange, size: 18),
                           SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              '120m away — get closer to pay (tap to simulate)',
-                              style: TextStyle(color: Colors.orange),
-                            ),
-                          ),
+                          Expanded(child: Text('120m away — get closer to pay (tap to simulate)', style: TextStyle(color: Colors.orange))),
                         ],
                       ),
                     ),
                   ),
             SizedBox(height: 12),
             ElevatedButton(
-              onPressed: closeEnough
+              onPressed: (closeEnough && total > 0 && AppData.walletBalance >= total)
                   ? () {
                       setState(() {
                         AppData.orders.insert(0, {
-                          'id': AppData.nextOrderId,
+                          'id': AppData.nextOrderId++,
                           'status': 'Preparing',
-                          'items': AppData.cart.map((item) {
-                            return item['name'];
-                          }).join(', '),
+                          'items': AppData.cart.map((i) => '${i['name']} x${i['qty']}').join(', '),
                           'total': total,
                         });
-                        AppData.nextOrderId = AppData.nextOrderId + 1;
-                        AppData.walletBalance = AppData.walletBalance - total;
-                        AppData.cart = [];
+                        AppData.walletBalance -= total;
+                        AppData.cart.clear();
                       });
                       Navigator.pushReplacement(context, fadeRoute(OrdersScreen()));
                     }
@@ -121,11 +99,8 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               child: Text(
-                'Pay from wallet (Rs ' + formatRs(AppData.walletBalance) + ')',
-                style: TextStyle(
-                  color: closeEnough ? Colors.black : Colors.white38,
-                  fontWeight: FontWeight.bold,
-                ),
+                'Pay from wallet (Rs ${formatRs(AppData.walletBalance)})',
+                style: TextStyle(color: closeEnough ? Colors.black : Colors.white38, fontWeight: FontWeight.bold),
               ),
             ),
           ],
