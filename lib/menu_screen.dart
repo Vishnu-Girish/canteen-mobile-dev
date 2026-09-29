@@ -5,17 +5,12 @@ import 'transitions.dart';
 
 class MenuScreen extends StatefulWidget {
   final String canteenName;
-  MenuScreen({required this.canteenName});
+  final List<Map<String, dynamic>> menuItems;
+  MenuScreen({required this.canteenName, required this.menuItems});
   State<MenuScreen> createState() => MenuScreenState();
 }
 
 class MenuScreenState extends State<MenuScreen> {
-  List<Map<String, dynamic>> menuItems = [
-    {'name': 'Idli sambar', 'price': 30, 'available': true},
-    {'name': 'Veg puffs', 'price': 20, 'available': true},
-    {'name': 'Samosa', 'price': 15, 'available': false},
-  ];
-
   Widget build(BuildContext context) {
     int totalItems = AppData.cart.fold(0, (sum, item) => sum + (item['qty'] as int));
 
@@ -33,10 +28,10 @@ class MenuScreenState extends State<MenuScreen> {
           children: [
             Expanded(
               child: ListView.separated(
-                itemCount: menuItems.length,
+                itemCount: widget.menuItems.length,
                 separatorBuilder: (context, index) => Divider(color: Colors.white12),
                 itemBuilder: (context, index) {
-                  var item = menuItems[index];
+                  var item = widget.menuItems[index];
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(

@@ -7,6 +7,25 @@ class AppData {
     {'id': 238, 'status': 'Picked up', 'items': 'Idli sambar x1', 'total': 30},
   ];
 
+  static List<Map<String, dynamic>> canteens = [
+    {
+      'name': 'Main canteen',
+      'info': '120m away · open',
+      'menu': [
+        {'name': 'Idli sambar', 'price': 30, 'available': true},
+        {'name': 'Veg puffs', 'price': 20, 'available': true},
+        {'name': 'Samosa', 'price': 15, 'available': false},
+      ]
+    },
+    {
+      'name': 'Hostel mess',
+      'info': '400m away · open',
+      'menu': [
+        {'name': 'Meals', 'price': 50, 'available': true},
+      ]
+    }
+  ];
+
   static double cartTotal() {
     double total = 0;
     for (var item in cart) {

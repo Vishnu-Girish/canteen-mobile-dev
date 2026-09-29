@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_data.dart';
 import 'menu_screen.dart';
 import 'orders_screen.dart';
 import 'create_canteen_screen.dart';
@@ -39,7 +40,7 @@ class HomeScreenState extends State<HomeScreen> {
             children: [
               Text('Canteens', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
               OutlinedButton(
-                onPressed: () => Navigator.push(context, fadeRoute(CreateCanteenScreen())),
+                onPressed: () => Navigator.push(context, fadeRoute(CreateCanteenScreen())).then((_) => setState(() {})),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: Colors.white54),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -49,25 +50,28 @@ class HomeScreenState extends State<HomeScreen> {
             ],
           ),
           SizedBox(height: 16),
-          canteenCard(context, 'Main canteen', '120m away · open'),
-          SizedBox(height: 12),
-          canteenCard(context, 'Hostel mess', '400m away · open'),
+          Expanded(
+            child: ListView.separated(
+              itemCount: AppData.canteens.length,
+              separatorBuilder: (context, index) => SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                var c = AppData.canteens[index];
+                return canteenCard(context, c['name'], c['info'], c['menu']);
+              },
+            ),
+          )
         ],
       ),
     );
   }
 
-  Widget canteenCard(BuildContext context, String name, String info) {
+  Widget canteenCard(BuildContext context, String name, String info, List<Map<String, dynamic>> menu) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, fadeRoute(MenuScreen(canteenName: name))),
+      onTap: () => Navigator.push(context, fadeRoute(MenuScreen(canteenName: name, menuItems: menu))),
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Color(0xFF1E1E1E),
-          border: Border.all(color: Colors.white12),
-          borderRadius: BorderRadius.circular(10),
-        ),
+        decoration: BoxDecoration(color: Color(0xFF1E1E1E), border: Border.all(color: Colors.white12), borderRadius: BorderRadius.circular(10)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
