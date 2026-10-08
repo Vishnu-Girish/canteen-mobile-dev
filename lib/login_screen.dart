@@ -4,56 +4,120 @@ import 'home_screen.dart';
 import 'transitions.dart';
 
 class LoginScreen extends StatefulWidget {
-  State<LoginScreen> createState() => LoginScreenState();
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class LoginScreenState extends State<LoginScreen> {
-  final userCtrl = TextEditingController();
-  final passCtrl = TextEditingController();
-  String error = '';
+class _LoginScreenState extends State<LoginScreen> {
+  static const Map<String, Map<String, String>> credentials = {
+    'student': {'username': 'student', 'password': 'student123'},
+    'admin': {'username': 'admin', 'password': 'admin123'},
+  };
 
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+  String selectedRole = 'student';
+  bool obscurePassword = true;
+
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  void login() {
+    final roleCredentials = credentials[selectedRole]!;
+    final isValid = usernameController.text.trim() == roleCredentials['username'] &&
+        passwordController.text == roleCredentials['password'];
+
+    if (!isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Incorrect username or password.')),
+      );
+      return;
+    }
+
+    AppData.currentUserRole = selectedRole;
+    Navigator.pushReplacement(context, fadeRoute(HomeScreen()));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF141414),
-      body: Padding(
-        padding: EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('CanteenGo', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
-            SizedBox(height: 40),
-            TextField(
-              controller: userCtrl,
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(labelText: 'Username (admin / student)', labelStyle: TextStyle(color: Colors.white54), enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white24))),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Icon(Icons.storefront, size: 48, color: Colors.white),
+                const SizedBox(height: 16),
+                const Text(
+                  'Canteen App',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 24),
+                DropdownButtonFormField<String>(
+                  value: selectedRole,
+                  decoration: const InputDecoration(
+                    labelText: 'Sign in as',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'student', child: Text('Student')),
+                    DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                  ],
+                  onChanged: (role) {
+                    if (role != null) {
+                      setState(() {
+                        selectedRole = role;
+                        usernameController.clear();
+                        passwordController.clear();
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: usernameController,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person_outline),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: passwordController,
+                  obscureText: obscurePassword,
+                  onSubmitted: (_) => login(),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      tooltip: obscurePassword ? 'Show password' : 'Hide password',
+                      onPressed: () => setState(() => obscurePassword = !obscurePassword),
+                      icon: Icon(obscurePassword ? Icons.visibility : Icons.visibility_off),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: login,
+                  child: const Text('Log in'),
+                ),
+              ],
             ),
-            SizedBox(height: 16),
-            TextField(
-              controller: passCtrl,
-              obscureText: true,
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(labelText: 'Password (admin / student)', labelStyle: TextStyle(color: Colors.white54), enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white24))),
-            ),
-            SizedBox(height: 8),
-            Text(error, style: TextStyle(color: Colors.redAccent)),
-            SizedBox(height: 16),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.white, padding: EdgeInsets.all(16)),
-              onPressed: () {
-                if (userCtrl.text == 'admin' && passCtrl.text == 'admin') {
-                  AppData.currentUserRole = 'admin';
-                  Navigator.pushReplacement(context, fadeRoute(HomeScreen()));
-                } else if (userCtrl.text == 'student' && passCtrl.text == 'student') {
-                  AppData.currentUserRole = 'student';
-                  Navigator.pushReplacement(context, fadeRoute(HomeScreen()));
-                } else {
-                  setState(() => error = 'Invalid credentials');
-                }
-              },
-              child: Text('Login', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-            )
-          ],
+          ),
         ),
       ),
     );

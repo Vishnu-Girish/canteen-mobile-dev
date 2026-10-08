@@ -3,6 +3,7 @@ import 'app_data.dart';
 import 'menu_screen.dart';
 import 'orders_screen.dart';
 import 'create_canteen_screen.dart';
+import 'login_screen.dart';
 import 'transitions.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -41,15 +42,27 @@ class HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Canteens', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-              if (isAdmin)
-                OutlinedButton(
-                  onPressed: () => Navigator.push(context, fadeRoute(CreateCanteenScreen())).then((_) => setState(() {})),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.white54),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: Text('+ Create', style: TextStyle(color: Colors.white)),
-                ),
+              Row(
+                children: [
+                  if (isAdmin)
+                    OutlinedButton(
+                      onPressed: () => Navigator.push(context, fadeRoute(CreateCanteenScreen())).then((_) => setState(() {})),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.white54),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Text('+ Create', style: TextStyle(color: Colors.white)),
+                    ),
+                  SizedBox(width: 8),
+                  IconButton(
+                    icon: Icon(Icons.logout, color: Colors.white70),
+                    onPressed: () {
+                      AppData.currentUserRole = '';
+                      Navigator.pushReplacement(context, fadeRoute(LoginScreen()));
+                    },
+                  )
+                ],
+              ),
             ],
           ),
           SizedBox(height: 16),
