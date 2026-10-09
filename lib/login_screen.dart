@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'app_data.dart';
 import 'home_screen.dart';
 import 'transitions.dart';
@@ -11,15 +12,10 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  static const Map<String, Map<String, String>> credentials = {
-    'student': {'username': 'student', 'password': 'student123'},
-    'admin': {'username': 'admin', 'password': 'admin123'},
-  };
-
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
-  String selectedRole = 'student';
   bool obscurePassword = true;
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -28,25 +24,43 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void login() {
-    final roleCredentials = credentials[selectedRole]!;
-    final isValid = usernameController.text.trim() == roleCredentials['username'] &&
-        passwordController.text == roleCredentials['password'];
+  Future<void> login() async {
+    setState(() => isLoading = true);
 
-    if (!isValid) {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('username', isEqualTo: usernameController.text.trim())
+          .where('password', isEqualTo: passwordController.text)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Incorrect username or password.')),
+        );
+        setState(() => isLoading = false);
+        return;
+      }
+
+      // Extract the role directly from the database document
+      final userData = snapshot.docs.first.data();
+      AppData.currentUserRole = userData['role'];
+      
+      if (mounted) {
+        Navigator.pushReplacement(context, fadeRoute(HomeScreen()));
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Incorrect username or password.')),
+        SnackBar(content: Text('Database error: $e')),
       );
-      return;
+      setState(() => isLoading = false);
     }
-
-    AppData.currentUserRole = selectedRole;
-    Navigator.pushReplacement(context, fadeRoute(HomeScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF494D5F),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 360),
@@ -61,37 +75,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Text(
                   'Canteen App',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
-                const SizedBox(height: 24),
-                DropdownButtonFormField<String>(
-                  value: selectedRole,
-                  decoration: const InputDecoration(
-                    labelText: 'Sign in as',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'student', child: Text('Student')),
-                    DropdownMenuItem(value: 'admin', child: Text('Admin')),
-                  ],
-                  onChanged: (role) {
-                    if (role != null) {
-                      setState(() {
-                        selectedRole = role;
-                        usernameController.clear();
-                        passwordController.clear();
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
                 TextField(
                   controller: usernameController,
                   textInputAction: TextInputAction.next,
+                  style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
                     labelText: 'Username',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person_outline),
+                    labelStyle: TextStyle(color: Color(0xFFE5EAF5)),
+                    filled: true,
+                    fillColor: Color(0xFF8458B3),
+                    border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8))),
+                    prefixIcon: Icon(Icons.person_outline, color: Color(0xFFE5EAF5)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -99,21 +96,33 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: passwordController,
                   obscureText: obscurePassword,
                   onSubmitted: (_) => login(),
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    labelStyle: const TextStyle(color: Color(0xFFE5EAF5)),
+                    filled: true,
+                    fillColor: const Color(0xFF8458B3),
+                    border: const OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8))),
+                    prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFE5EAF5)),
                     suffixIcon: IconButton(
                       tooltip: obscurePassword ? 'Show password' : 'Hide password',
                       onPressed: () => setState(() => obscurePassword = !obscurePassword),
-                      icon: Icon(obscurePassword ? Icons.visibility : Icons.visibility_off),
+                      icon: Icon(obscurePassword ? Icons.visibility : Icons.visibility_off, color: const Color(0xFFE5EAF5)),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: login,
-                  child: const Text('Log in'),
+                  onPressed: isLoading ? null : login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFA0D2EB),
+                    foregroundColor: const Color(0xFF494D5F),
+                    padding: const EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: isLoading 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Color(0xFF494D5F)))
+                      : const Text('Log in', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ],
             ),

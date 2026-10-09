@@ -1,76 +1,75 @@
 import 'package:flutter/material.dart';
-import 'app_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CreateCanteenScreen extends StatefulWidget {
-  State<CreateCanteenScreen> createState() => CreateCanteenScreenState();
+  @override
+  State<CreateCanteenScreen> createState() => _CreateCanteenScreenState();
 }
 
-class CreateCanteenScreenState extends State<CreateCanteenScreen> {
+class _CreateCanteenScreenState extends State<CreateCanteenScreen> {
   final nameCtrl = TextEditingController();
-  final itemCtrl = TextEditingController();
-  final priceCtrl = TextEditingController();
-  List<Map<String, dynamic>> pendingMenu = [];
+  bool isSaving = false;
 
+  @override
+  void dispose() {
+    nameCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> saveCanteen() async {
+    if (nameCtrl.text.trim().isEmpty) return;
+    
+    setState(() => isSaving = true);
+    
+    try {
+      await FirebaseFirestore.instance.collection('canteens').add({
+        'name': nameCtrl.text.trim(),
+        'info': 'Newly created',
+        'menu': [],
+      });
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      setState(() => isSaving = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF141414),
+      backgroundColor: const Color(0xFF494D5F),
       appBar: AppBar(
-        backgroundColor: Color(0xFF141414),
+        title: const Text('Create Canteen', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF494D5F),
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.white),
-        title: Text('Create Canteen', style: TextStyle(color: Colors.white)),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(
               controller: nameCtrl,
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(labelText: 'Canteen Name', labelStyle: TextStyle(color: Colors.white54), enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white24))),
-            ),
-            SizedBox(height: 20),
-            Text('Menu Items', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(child: TextField(controller: itemCtrl, style: TextStyle(color: Colors.white), decoration: InputDecoration(hintText: 'Item name', hintStyle: TextStyle(color: Colors.white38)))),
-                SizedBox(width: 10),
-                SizedBox(width: 80, child: TextField(controller: priceCtrl, keyboardType: TextInputType.number, style: TextStyle(color: Colors.white), decoration: InputDecoration(hintText: 'Price', hintStyle: TextStyle(color: Colors.white38)))),
-                IconButton(
-                  icon: Icon(Icons.add, color: Colors.white),
-                  onPressed: () {
-                    if (itemCtrl.text.isNotEmpty && priceCtrl.text.isNotEmpty) {
-                      setState(() {
-                        pendingMenu.add({'name': itemCtrl.text, 'price': double.parse(priceCtrl.text), 'available': true});
-                        itemCtrl.clear();
-                        priceCtrl.clear();
-                      });
-                    }
-                  },
-                )
-              ],
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: pendingMenu.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(pendingMenu[index]['name'], style: TextStyle(color: Colors.white)),
-                    trailing: Text('Rs ${formatRs(pendingMenu[index]['price'])}', style: TextStyle(color: Colors.white)),
-                  );
-                },
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Canteen Name',
+                labelStyle: TextStyle(color: Color(0xFFE5EAF5)),
+                filled: true,
+                fillColor: Color(0xFF8458B3),
+                border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.all(Radius.circular(8))),
               ),
             ),
+            const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {
-                if (nameCtrl.text.isNotEmpty) {
-                  AppData.canteens.add({'name': nameCtrl.text, 'info': '0m away · newly created', 'menu': pendingMenu});
-                  Navigator.pop(context);
-                }
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.white, minimumSize: Size(double.infinity, 50)),
-              child: Text('Save Canteen', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              onPressed: isSaving ? null : saveCanteen,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFA0D2EB),
+                padding: const EdgeInsets.all(16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: isSaving
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Color(0xFF494D5F)))
+                  : const Text('Save Canteen', style: TextStyle(color: Color(0xFF494D5F), fontWeight: FontWeight.bold, fontSize: 16)),
             ),
           ],
         ),

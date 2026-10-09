@@ -1,73 +1,38 @@
 import 'package:flutter/material.dart';
-import 'app_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-// Screen 4 from the diagram: Orders + wallet.
 class OrdersScreen extends StatelessWidget {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF141414),
+      backgroundColor: const Color(0xFF494D5F),
       appBar: AppBar(
-        backgroundColor: Color(0xFF141414),
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.white),
-        title: Text('Your orders', style: TextStyle(color: Colors.white)),
+        title: const Text('My Orders', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF494D5F),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: ListView.separated(
-                itemCount: AppData.orders.length,
-                separatorBuilder: (context, index) {
-                  return Divider(color: Colors.white12);
-                },
-                itemBuilder: (context, index) {
-                  var order = AppData.orders[index];
-                  Color statusColor = order['status'] == 'Preparing'
-                      ? Colors.greenAccent
-                      : Colors.white38;
-                  return Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Order #' + order['id'].toString(),
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              order['items'] + ' — Rs ' + formatRs(order['total']),
-                              style: TextStyle(color: Colors.white54, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                        Text(order['status'], style: TextStyle(color: statusColor)),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            Divider(color: Colors.white12),
-            SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Wallet balance', style: TextStyle(color: Colors.white70)),
-                Text(
-                  'Rs ' + formatRs(AppData.walletBalance),
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('orders').orderBy('timestamp', descending: true).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator(color: Colors.white));
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) return const Center(child: Text('No orders yet.', style: TextStyle(color: Colors.white)));
+
+          var docs = snapshot.data!.docs;
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              var data = docs[index].data() as Map<String, dynamic>;
+              return Card(
+                color: const Color(0xFF8458B3),
+                child: ListTile(
+                  title: Text(data['items'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  subtitle: Text('Total: Rs ${data['total']}', style: const TextStyle(color: Colors.white70)),
+                  trailing: Text(data['status'] ?? '', style: const TextStyle(color: Color(0xFFA0D2EB), fontWeight: FontWeight.bold)),
                 ),
-              ],
-            ),
-          ],
-        ),
+              );
+            },
+          );
+        }
       ),
     );
   }

@@ -17,8 +17,17 @@ class MyApp extends StatelessWidget {
       title: 'Canteen App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: Color(0xFF141414),
+        scaffoldBackgroundColor: const Color(0xFF494D5F),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF494D5F),
+          elevation: 0,
+          iconTheme: IconThemeData(color: Color(0xFFE5EAF5)),
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Color(0xFF8458B3),
+          selectedItemColor: Color(0xFFE5EAF5),
+          unselectedItemColor: Color(0xFFD0BDF4),
+        ),
       ),
       home: LoginScreen(),
     );
