@@ -18,7 +18,6 @@ class HomeScreenState extends State<HomeScreen> {
   void _showWalletDialog(BuildContext context) {
     final rollNoCtrl = TextEditingController();
     final amountCtrl = TextEditingController();
-    // Regex pattern matching: CB.SC.U4 [3 letters/chars] [5 digits]
     final RegExp rollNoRegex = RegExp(r'^CB\.SC\.U4[A-Za-z]{3}\d{5}$');
 
     showDialog(
@@ -140,7 +139,18 @@ class HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Canteens', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  // Customized font styling for "Canteens"
+                  const Text(
+                    'Canteens',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      fontStyle: FontStyle.italic,
+                      letterSpacing: 1.2,
+                      // fontFamily: 'YourCustomFontName', // Uncomment and add to pubspec if using a custom asset font
+                    ),
+                  ),
                   Row(
                     children: [
                       if (!isAdmin)
