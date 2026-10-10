@@ -107,11 +107,11 @@ class CheckoutScreenState extends State<CheckoutScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Total', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                Text('Rs ${formatRs(total)}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('Rs ${formatRs(total)}', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 20),
-            if (!closeEnough)
+            if (!closeEnough) ...[
               GestureDetector(
                 onTap: isChecking ? null : verifyProximity,
                 child: Container(
@@ -129,6 +129,17 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    closeEnough = true;
+                    locationMessage = 'GPS bypassed for demonstration.';
+                  });
+                },
+                child: const Text('Force Bypass GPS (Demo Mode)', style: TextStyle(color: Color(0xFFA0D2EB), decoration: TextDecoration.underline)),
+              ),
+            ],
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: (closeEnough && total > 0 && AppData.walletBalance >= total)

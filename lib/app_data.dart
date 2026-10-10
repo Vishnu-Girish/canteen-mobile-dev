@@ -1,20 +1,13 @@
 class AppData {
-  static String currentUserRole = 'student'; // Populated by Firestore on login
+  static String currentUserRole = '';
+  static double walletBalance = 500.0;
+  static bool isDarkMode = true; // Added dynamic theme flag
   static List<Map<String, dynamic>> cart = [];
-  static double walletBalance = 300; // We will move this to the DB later
 
-  static double cartTotal() {
-    double total = 0;
-    for (var item in cart) {
-      total += item['price'] * item['qty'];
-    }
-    return total;
-  }
-
-  static void addToCart(String name, dynamic price) {
+  static void addToCart(String name, double price) {
     for (var item in cart) {
       if (item['name'] == name) {
-        item['qty'] += 1;
+        item['qty']++;
         return;
       }
     }
@@ -24,9 +17,19 @@ class AppData {
   static void removeFromCart(String name) {
     cart.removeWhere((item) => item['name'] == name);
   }
+
+  static double cartTotal() {
+    double total = 0;
+    for (var item in cart) {
+      total += (item['price'] * item['qty']);
+    }
+    return total;
+  }
 }
 
-String formatRs(dynamic amount) {
-  double value = amount is int ? amount.toDouble() : amount;
-  return value.toStringAsFixed(0);
+String formatRs(double val) {
+  if (val == val.roundToDouble()) {
+    return val.toInt().toString();
+  }
+  return val.toStringAsFixed(2);
 }

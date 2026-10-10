@@ -19,15 +19,19 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     bool isAdmin = AppData.currentUserRole == 'admin';
 
-    return Scaffold(
-      body: selectedTab == 0 ? SafeArea(child: buildHomeTab(context, isAdmin)) : OrdersScreen(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: selectedTab,
-        onTap: (index) => setState(() => selectedTab = index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.storefront), label: 'Canteens'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Orders'),
-        ],
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: AppData.isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      home: Scaffold(
+        body: selectedTab == 0 ? SafeArea(child: buildHomeTab(context, isAdmin)) : OrdersScreen(),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: selectedTab,
+          onTap: (index) => setState(() => selectedTab = index),
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.storefront), label: 'Canteens'),
+            BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Orders'),
+          ],
+        ),
       ),
     );
   }
@@ -66,6 +70,14 @@ class HomeScreenState extends State<HomeScreen> {
                   const Text('Canteens', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                   Row(
                     children: [
+                      IconButton(
+                        icon: Icon(AppData.isDarkMode ? Icons.light_mode : Icons.dark_mode, color: const Color(0xFFE5EAF5)),
+                        onPressed: () {
+                          setState(() {
+                            AppData.isDarkMode = !AppData.isDarkMode;
+                          });
+                        },
+                      ),
                       if (isAdmin)
                         OutlinedButton(
                           onPressed: () => Navigator.push(context, fadeRoute(CreateCanteenScreen())),
