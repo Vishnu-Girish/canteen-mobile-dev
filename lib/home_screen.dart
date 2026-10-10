@@ -15,6 +15,79 @@ class HomeScreen extends StatefulWidget {
 class HomeScreenState extends State<HomeScreen> {
   int selectedTab = 0;
 
+  void _showWalletDialog(BuildContext context) {
+    final rollNoCtrl = TextEditingController();
+    final amountCtrl = TextEditingController();
+    // Regex pattern matching: CB.SC.U4 [3 letters/chars] [5 digits]
+    final RegExp rollNoRegex = RegExp(r'^CB\.SC\.U4[A-Za-z]{3}\d{5}$');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF494D5F),
+        title: const Text('Add Funds to Wallet', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: rollNoCtrl,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Roll No (CB.SC.U4xxxyyyyy)',
+                labelStyle: TextStyle(color: Colors.white70),
+              ),
+            ),
+            TextField(
+              controller: amountCtrl,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Amount (Rs)',
+                labelStyle: TextStyle(color: Colors.white70),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFA0D2EB)),
+            onPressed: () {
+              String rollNo = rollNoCtrl.text.trim();
+              if (!rollNoRegex.hasMatch(rollNo)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Invalid roll number format! Must match CB.SC.U4xxxyyyyy')),
+                );
+                return;
+              }
+
+              double? amt = double.tryParse(amountCtrl.text);
+              if (amt == null || amt <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Enter a valid amount.')),
+                );
+                return;
+              }
+
+              setState(() {
+                AppData.walletBalance += amt;
+              });
+
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Successfully added Rs ${formatRs(amt)} to wallet!')),
+              );
+            },
+            child: const Text('Add Funds', style: TextStyle(color: Color(0xFF494D5F))),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isAdmin = AppData.currentUserRole == 'admin';
@@ -70,6 +143,12 @@ class HomeScreenState extends State<HomeScreen> {
                   const Text('Canteens', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                   Row(
                     children: [
+                      if (!isAdmin)
+                        IconButton(
+                          icon: const Icon(Icons.account_balance_wallet, color: Color(0xFFA0D2EB)),
+                          tooltip: 'Add Funds',
+                          onPressed: () => _showWalletDialog(context),
+                        ),
                       IconButton(
                         icon: Icon(AppData.isDarkMode ? Icons.light_mode : Icons.dark_mode, color: const Color(0xFFE5EAF5)),
                         onPressed: () {

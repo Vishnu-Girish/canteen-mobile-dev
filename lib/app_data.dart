@@ -1,7 +1,7 @@
 class AppData {
   static String currentUserRole = '';
   static double walletBalance = 500.0;
-  static bool isDarkMode = true; // Added dynamic theme flag
+  static bool isDarkMode = true;
   static List<Map<String, dynamic>> cart = [];
 
   static void addToCart(String name, double price) {
