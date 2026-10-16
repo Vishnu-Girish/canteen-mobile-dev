@@ -89,18 +89,26 @@ class CheckoutScreenState extends State<CheckoutScreen> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-            onPressed: () {
-              Navigator.pop(context);
-              _processOrder(total, paymentMethod: 'UPI QR Code');
-            },
-            child: const Text('Simulate Payment Success', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.greenAccent, 
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _processOrder(total, paymentMethod: 'UPI QR Code');
+                },
+                child: const Text('Simulate Payment Success', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+              ),
+            ],
+          )
         ],
       ),
     );
@@ -154,7 +162,6 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       'timestamp': FieldValue.serverTimestamp(),
     });
 
-    // Generate PDF Bill automatically on success
     await _generateAndPrintPdf(orderId, total);
 
     setState(() {

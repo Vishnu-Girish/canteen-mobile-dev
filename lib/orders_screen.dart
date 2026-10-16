@@ -32,6 +32,9 @@ class OrdersScreen extends StatelessWidget {
               var data = doc.data() as Map<String, dynamic>;
               String status = data['status'] ?? 'Preparing';
 
+              // Safely cast the total using num to prevent int vs double type crashes
+              double orderTotal = (data['total'] as num?)?.toDouble() ?? 0.0;
+
               Color statusColor = Colors.orangeAccent;
               if (status == 'Ready') statusColor = Colors.blueAccent;
               if (status == 'Completed') statusColor = Colors.greenAccent;
@@ -63,7 +66,7 @@ class OrdersScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(data['items'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
                       const SizedBox(height: 4),
-                      Text('Total: Rs ${formatRs(data['total'] ?? 0)}', style: const TextStyle(color: Color(0xFFA0D2EB), fontSize: 13)),
+                      Text('Total: Rs ${formatRs(orderTotal)}', style: const TextStyle(color: Color(0xFFA0D2EB), fontSize: 13)),
                       if (isAdmin) ...[
                         const Divider(color: Color(0xFFD0BDF4)),
                         Row(
