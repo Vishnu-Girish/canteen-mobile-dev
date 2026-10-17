@@ -69,19 +69,22 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF494D5F),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Scan QR to Pay (UPI)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('Scan QR to Pay', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Scan with GPay / PhonePe / Paytm', style: TextStyle(color: Colors.white70, fontSize: 13)),
+            const Text('Use GPay / PhonePe / Paytm', style: TextStyle(color: Colors.white70, fontSize: 13)),
             const SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.all(12),
+              width: 200,
+              height: 200,
+              alignment: Alignment.center,
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
               child: QrImageView(
                 data: 'upi://pay?pa=amritacanteen@upi&pn=CampusCanteen&am=$total&cu=INR',
                 version: QrVersions.auto,
                 size: 180.0,
+                backgroundColor: Colors.white,
               ),
             ),
             const SizedBox(height: 14),
